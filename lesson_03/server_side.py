@@ -1,9 +1,11 @@
 from socket import socket, AF_INET, SOCK_STREAM
-from vars import server_address
+from conf import DEFAULT_IP, DEFAULT_PORT
 from loguru import logger
+import argparse
+
 
 with socket(AF_INET, SOCK_STREAM) as s:
-    s.bind(server_address)
+    s.bind((DEFAULT_IP, DEFAULT_PORT))
     s.listen(5)
 
     while True:
