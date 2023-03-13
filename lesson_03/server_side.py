@@ -2,8 +2,10 @@ from socket import socket, AF_INET, SOCK_STREAM
 from conf import DEFAULT_IP, DEFAULT_PORT
 from loguru import logger
 import argparse
+from utils import send_message, recv_message, responce
 
 
+@logger.catch()
 def main():
     parser = argparse.ArgumentParser(description='run server')
     parser.add_argument('--address', '-a', type=str, default=DEFAULT_IP, help='set server address (default: 127.0.0.1)')
@@ -24,9 +26,10 @@ def run_server(address, port):
             logger.debug(f"Client connected from {client_address}")
 
             try:
-                data = s_connect.recv(1024)
-                logger.debug(f"Received data: {data}")
-                s_connect.send(b"message form server: get your message")
+                data = recv_message(s_connect)
+                logger.info(f"Received data: {data}")
+
+                send_message(s_connect, responce)
             finally:
                 s_connect.close
 

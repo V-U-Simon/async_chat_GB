@@ -4,7 +4,7 @@ from conf import DEFAULT_IP, DEFAULT_PORT
 from loguru import logger
 import argparse
 import time
-from utils import send_message, presence
+from utils import send_message, recv_message, presence
 
 
 @logger.catch
@@ -20,9 +20,8 @@ def main():
 def run_client(address, port):
     with socket(AF_INET, SOCK_STREAM) as s:
         connect_to_server(s, address, port)
-
-        data = s.recv(1024)
-        logger.debug(data.decode("utf-8"))
+        data = recv_message(s)
+        logger.info(f'message from server: {data}')
 
 
 def connect_to_server(s: socket, address, port):
@@ -32,6 +31,7 @@ def connect_to_server(s: socket, address, port):
         logger.debug(f'connected to server ({DEFAULT_IP}:{DEFAULT_PORT})')
         logger.debug(f'client: ({s.getsockname()})')
         send_message(s, presence)
+
     else:
         logger.error(f'failed to connect to server: {result}')
         exit(1)
