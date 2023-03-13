@@ -1,8 +1,8 @@
 import pytest
 from socket import socket, AF_INET, SOCK_STREAM
 from unittest.mock import patch
-from messenger.client import Client
-from messenger.conf import DEFAULT_IP, DEFAULT_PORT
+from ..client_side import Client
+from ..conf import DEFAULT_IP, DEFAULT_PORT
 
 
 @pytest.fixture(scope="module")
@@ -42,7 +42,8 @@ def client():
                                                             "response": 400,
                                                             "time": 1234567890.123456
                                                         })])
-def test_send_and_receive_message(client, server_socket, message, expected_response):
+def test_send_and_receive_message(client: Client, server_socket: socket, message: dict[str, str | float | dict[str, str]],
+                                  expected_response: dict[str, int | float]):
     # Arrange
     server_conn, server_address = server_socket.accept()
 

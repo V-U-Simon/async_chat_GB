@@ -1,10 +1,8 @@
 import json
 import pytest
 from socket import socket, AF_INET, SOCK_STREAM
-# from messenger.server_side import Server, main
-# from messenger.conf import DEFAULT_IP, DEFAULT_PORT
 
-from server_side import *
+from ..server_side import Server, main
 from conf import DEFAULT_IP, DEFAULT_PORT
 from unittest.mock import Mock, patch
 
