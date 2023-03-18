@@ -6,6 +6,10 @@ from messenger.config import DEFAULT_IP, DEFAULT_PORT
 from messenger.protocol import AuthPresence
 from messenger.utils import send_data, recv_data
 
+logger.add('logs/client_debug.log', level='DEBUG', rotation='10 MB')
+format = format = "client | {time} {level} | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | {message}"
+logger.add('logs/debug.log', level='DEBUG', format=format, rotation='10 MB')
+
 
 class Client:
 

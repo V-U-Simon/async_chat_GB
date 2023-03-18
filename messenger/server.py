@@ -8,6 +8,10 @@ from messenger.config import DEFAULT_IP, DEFAULT_PORT, MAX_CONNECTIONS
 from messenger.utils import send_data, recv_data
 from messenger.protocol import Responce200
 
+logger.add('logs/server_debug.log', level='DEBUG', rotation='10 MB')
+format = format = "server | {time} {level} | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | {message}"
+logger.add('logs/debug.log', level='DEBUG', format=format, rotation='10 MB')
+
 
 class Server:
 
