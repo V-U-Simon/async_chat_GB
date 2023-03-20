@@ -1,14 +1,12 @@
 from socket import socket as sock
 from socket import AF_INET, SOCK_STREAM
-from loguru import logger
 
 from messenger.config import DEFAULT_IP, DEFAULT_PORT
 from messenger.protocol import AuthPresence
+from messenger.protocol.request import Request
+from messenger.protocol.response import Responce
 from messenger.utils import send_data, recv_data
-
-logger.add('logs/client_debug.log', level='DEBUG', rotation='10 MB')
-format = format = "client | {time} {level} | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | {message}"
-logger.add('logs/debug.log', level='DEBUG', format=format, rotation='10 MB')
+from messenger.utils import log, logger
 
 
 class Client:
@@ -22,28 +20,28 @@ class Client:
         with sock(AF_INET, SOCK_STREAM) as socket:
 
             # create socket and connect to the server
-            self.connect_to_server(socket)
-            logger.debug(f'🆕 created socket: {socket.getsockname()} and connected to the server')
+            self.socket: sock = socket
+            self.connect_to_server()
+            self.send_presence_report()
 
             # send message
             # todo: send data to server
 
-    def connect_to_server(self, socket: sock):
-        logger.debug(f'🔌 try to connected to server')
-
-        # connect to the server
-        connect_status = socket.connect_ex((self.address, self.port))
+    @log()
+    def connect_to_server(self):
+        connect_status: int = self.socket.connect_ex((self.address, self.port))
         if connect_status != 0:
             logger.error(f'🔌🚨 failed to connect to server: {connect_status}')
             exit(1)
-        logger.debug(f'🔌 connected to server ({DEFAULT_IP}:{DEFAULT_PORT})')
+        return self.socket.getsockname()
 
-        # send presence message
-        logger.debug(f'🔌📩 try to send & receive presence report')
-        presonce_message = AuthPresence(User=None)  #todo: define user
-        send_data(socket, presonce_message)
-        data = recv_data(socket)
-        logger.debug(f'🔌📩 send & receive presence report: {data}')
+    @log()
+    def send_presence_report(self):
+        presonce_message: Request = AuthPresence(User=None)  #todo: define user
+        send_data(self.socket, presonce_message)
+
+        data: Responce = recv_data(self.socket)
+        return data
 
 
 if __name__ == '__main__':
