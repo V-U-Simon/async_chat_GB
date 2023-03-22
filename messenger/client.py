@@ -18,11 +18,12 @@ class Client:
     @logger.catch
     def run(self):
         with sock(AF_INET, SOCK_STREAM) as socket:
-
             # create socket and connect to the server
             self.socket: sock = socket
             self.connect_to_server()
             self.send_presence_report()
+            while True:
+                message = input('write some test: ')
 
             # send message
             # todo: send data to server
