@@ -8,7 +8,7 @@ from messenger.protocol import request
 
 
 @pytest.fixture
-def user_without_password() -> protocol.User:
+def user_without_password() -> protocol.UserWithoutPassword:
     user = {"account_name": "C0deMaver1ck", "status": "online"}
     return protocol.UserWithoutPassword(**user)
 

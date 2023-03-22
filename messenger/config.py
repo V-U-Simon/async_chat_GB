@@ -1,4 +1,13 @@
+# Socket
 DEFAULT_IP = ""
 DEFAULT_PORT = 8999
 ENCODING = "utf-8"
 MAX_CONNECTIONS = 5
+
+# Debug
+# DEBUG_LEVEL: str = "DEBUG"
+DEBUG_LEVEL: str = "TRACE"
+
+DEBUG_START: bool = False
+DEBUG_FINISH: bool = True
+DEBUG_MARKER: str = '✨'
