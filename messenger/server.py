@@ -7,6 +7,7 @@ from messenger.config import DEFAULT_IP, DEFAULT_PORT, MAX_CONNECTIONS
 from messenger.utils import send_data, recv_data
 from messenger.utils import log, logger
 from messenger.protocol import Responce200
+from messenger.protocol import Message
 
 
 class Server:
@@ -32,46 +33,51 @@ class Server:
             self.messages = {}
 
             while True:
-                read, send, close = select(self.inputs, self.outputs, self.inputs, 1)
-                self.process_read(read, send, close)
-                self.process_send(read, send, close)
-                self.process_close(read, send, close)
+                read_sockets, send_sockets, close_sockets = select(self.inputs, self.outputs, self.inputs, 1)
+                self.process_read(read_sockets, send_sockets, close_sockets)
+                self.process_send(read_sockets, send_sockets, close_sockets)
+                self.process_close(read_sockets, send_sockets, close_sockets)
 
-    def process_read(self, read, send, close):
-        for connection in read:
+    def process_read(self, read_sockets, send_sockets, close_sockets):
+        for connection in read_sockets:
             if connection is self.socket:
                 # create connection
-                client_socket, client_address = self.socket.accept()
-                client_socket.setblocking(False)
-                self.inputs.append(client_socket)
-                logger.debug(f"Client connected from {client_socket}, {client_address}")
+                connection, client_address = self.socket.accept()
+                connection.setblocking(False)
+                self.inputs.append(connection)
+                logger.debug(f"Client connected from {connection}, {client_address}")
             else:
                 # read connection
                 data = recv_data(connection)
                 if data:
-                    self.messages.setdefault(connection, []).append(data)
-                    if connection not in self.outputs:
-                        self.outputs.append(connection)
+                    # pass data to output if message
+                    if isinstance(data, Message):
+                        self.messages.setdefault(connection, []).append(data)
+                        if connection not in self.outputs:
+                            self.outputs.append(connection)
 
                     # Responce for valid messages
                     response = Responce200(alert='success message')
-                    send_data(client_socket, data=response)
+                    send_data(connection, data=response)
                 else:
                     # close the connection
-                    close.append(connection)
+                    close_sockets.append(connection)
 
-    def process_send(self, read, send, close):
-        for connection in send:
-            # todo: here will be implemented sending the message
-            # data = messages[connection].pop()
-            # send_data(client_socket, data=response)
+    def process_send(self, read_sockets, send_sockets, close_sockets):
+        for connection in send_sockets:
+
+            # Sending a message like echo but uppercasing
+            data: Message = self.messages[connection].pop()
+            if isinstance(data, Message):
+                data.message = data.message.upper()
+            send_data(connection, data=data)
             self.outputs.remove(connection)
 
-    def process_close(self, read, send, close):
-        for connection in close:
+    def process_close(self, read_sockets, send_sockets, close_sockets):
+        for connection in close_sockets:
             # close the connection
             self.inputs.remove(connection)
-            close.remove(connection)
+            close_sockets.remove(connection)
             if connection in self.outputs:
                 self.outputs.remove(connection)
             if self.messages.get(connection):

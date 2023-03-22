@@ -43,8 +43,8 @@ class AuthPrоbe(Request):
 
 class Message(Request):
     action: str = 'msg'
-    to: AccountName | ChatName
-    from_: AccountName
+    to: AccountName | ChatName = 'to'
+    from_: AccountName = 'from_'
     encoding: str = ENCODING
     message: str
 
