@@ -34,7 +34,7 @@ class AuthQuit(Request):
 class AuthPresence(Request):
     action: str = 'presence'
     type: str | None = 'status'
-    user: UserWithoutPassword | None = None
+    user: UserWithoutPassword | None | str = None
 
 
 class AuthPrоbe(Request):
@@ -43,8 +43,8 @@ class AuthPrоbe(Request):
 
 class Message(Request):
     action: str = 'msg'
-    to: AccountName | ChatName = 'to'
-    from_: AccountName = 'from_'
+    to: AccountName | ChatName
+    from_: AccountName
     encoding: str = ENCODING
     message: str
 

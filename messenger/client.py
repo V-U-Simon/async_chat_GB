@@ -1,6 +1,7 @@
 from socket import socket as sock
 from socket import AF_INET, SOCK_STREAM
 from time import sleep
+import threading
 
 from messenger.config import DEFAULT_IP, DEFAULT_PORT
 from messenger.protocol import AuthPresence
@@ -16,15 +17,22 @@ class Client:
         self.address = ip
         self.port = port
 
+    def recive_messages(self):
+        while True:
+            data = recv_data(self.socket)
+            print(f'--------------------{data}')
+
     @logger.catch
     def run(self):
         with sock(AF_INET, SOCK_STREAM) as socket:
             # create socket and connect to the server
             self.socket: sock = socket
+            self.user = input('введите ваше имя пользователя: ')
             self.connect_to_server()
             self.send_presence_report()
 
-            self.user = input('введите ваше имя пользователя: ')
+            receive_thread = threading.Thread(target=self.recive_messages)
+            receive_thread.start()
 
             while True:
                 self.to = input('введите имя получателя ("exit" для выхода): ')
@@ -45,11 +53,8 @@ class Client:
                 )
 
                 send_data(self.socket, message)
-                responce = recv_data(self.socket)
-                logger.critical(responce)
-
-                data = recv_data(self.socket)
-                logger.critical(data)
+                # responce = recv_data(self.socket)
+                # logger.critical(responce)s
 
     @log()
     def connect_to_server(self):
@@ -61,7 +66,7 @@ class Client:
 
     @log()
     def send_presence_report(self):
-        presonce_message: Request = AuthPresence(User=None)  #todo: define user
+        presonce_message: Request = AuthPresence(user=self.user)  #todo: define user
         send_data(self.socket, presonce_message)
 
         data: Responce = recv_data(self.socket)

@@ -9,5 +9,5 @@ MAX_CONNECTIONS = 5
 DEBUG_LEVEL: str = "TRACE"
 
 DEBUG_START: bool = False
-DEBUG_FINISH: bool = True
+DEBUG_FINISH: bool = False
 DEBUG_MARKER: str = '✨'
