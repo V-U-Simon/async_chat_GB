@@ -4,10 +4,11 @@ from socket import AF_INET, SOCK_STREAM
 from select import select
 
 from messenger.config import DEFAULT_IP, DEFAULT_PORT, MAX_CONNECTIONS
+from messenger.protocol.request import AuthQuit
 from messenger.utils import send_data, recv_data
 from messenger.utils import log, logger
 from messenger.protocol import Responce200
-from messenger.protocol import Message
+from messenger.protocol import Message, AuthPresence, AccountName
 
 
 class Server:
@@ -29,7 +30,8 @@ class Server:
 
             self.inputs: list[sock] = [socket]
             self.outputs: list[sock] = []
-            exepts: list[sock] = []
+            self.exepts: list[sock] = []
+            self.users: list[AccountName] = []
             self.messages = {}
 
             while True:
@@ -50,6 +52,15 @@ class Server:
                 # read connection
                 data = recv_data(connection)
                 if data:
+                    # authentication
+                    if isinstance(data, AuthPresence):
+                        user: AccountName = data.user
+                        self.users.append(user)
+
+                    if isinstance(data, AuthQuit):
+                        user: AccountName = data.user
+                        self.users.remove(user)
+
                     # pass data to output if message
                     if isinstance(data, Message):
                         self.messages.setdefault(connection, []).append(data)
