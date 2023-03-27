@@ -4,10 +4,12 @@ from socket import AF_INET, SOCK_STREAM
 from select import select
 
 from messenger.config import DEFAULT_IP, DEFAULT_PORT, MAX_CONNECTIONS
+from messenger.protocol.request import AuthQuit
+from messenger.protocol.response import Responce400
 from messenger.utils import send_data, recv_data
 from messenger.utils import log, logger
 from messenger.protocol import Responce200
-from messenger.protocol import Message
+from messenger.protocol import Message, AuthPresence, AccountName
 
 
 class Server:
@@ -29,10 +31,12 @@ class Server:
 
             self.inputs: list[sock] = [socket]
             self.outputs: list[sock] = []
-            exepts: list[sock] = []
+            self.exepts: list[sock] = []
+            self.users: dict[str, socket] = {}
             self.messages = {}
 
             while True:
+
                 read_sockets, send_sockets, close_sockets = select(self.inputs, self.outputs, self.inputs, 1)
                 self.process_read(read_sockets, send_sockets, close_sockets)
                 self.process_send(read_sockets, send_sockets, close_sockets)
@@ -50,6 +54,15 @@ class Server:
                 # read connection
                 data = recv_data(connection)
                 if data:
+                    # authentication
+                    if isinstance(data, AuthPresence):
+                        user: AccountName = data.user
+                        self.users.update({user: connection})
+
+                    if isinstance(data, AuthQuit):
+                        user: AccountName = data.user
+                        del self.users[user]
+
                     # pass data to output if message
                     if isinstance(data, Message):
                         self.messages.setdefault(connection, []).append(data)
@@ -69,9 +82,13 @@ class Server:
             # Sending a message like echo but uppercasing
             data: Message = self.messages[connection].pop()
             if isinstance(data, Message):
-                data.message = data.message.upper()
-            send_data(connection, data=data)
-            self.outputs.remove(connection)
+                user_socket: sock | None = self.users.get(data.to)
+                if user_socket:
+                    send_data(user_socket, data=data)
+                    self.outputs.remove(connection)
+                else:
+                    send_data(connection, data=Responce400(error='asked user not connected'))
+                    self.outputs.remove(connection)
 
     def process_close(self, read_sockets, send_sockets, close_sockets):
         for connection in close_sockets:
