@@ -1,9 +1,11 @@
 from socket import socket as sock
 from socket import AF_INET, SOCK_STREAM
+from time import sleep
 
 from messenger.config import DEFAULT_IP, DEFAULT_PORT
 from messenger.protocol import AuthPresence
 from messenger.protocol import Request, Responce, Message
+from messenger.protocol.request import AuthQuit
 from messenger.utils import send_data, recv_data
 from messenger.utils import log, logger
 
@@ -27,6 +29,10 @@ class Client:
             while True:
                 self.to = input('введите имя получателя ("exit" для выхода): ')
                 if self.to == 'exit':
+                    quit_message = AuthQuit(user=self.user)
+                    send_data(self.socket, quit_message)
+                    sleep(1)
+
                     self.socket.close()
                     break
 
