@@ -7,7 +7,8 @@ from pprint import pprint
 import functools
 import sys
 
-format: str = "{time} <b>{level:<8}</b> | <cyan>{name:<35}</cyan>:<cyan>{line:<4}</cyan> | <cyan>{function:<20}</cyan> {message}"
+# format: str = "{time} <b>{level:<8}</b> | <cyan>{name:<35}</cyan>:<cyan>{line:<4}</cyan> | <cyan>{function:<20}</cyan> {message}"
+format: str = "<cyan>{line:<4}</cyan> | <cyan>{function:<20}</cyan> {message}"
 
 logger.remove()
 level = DEBUG_LEVEL

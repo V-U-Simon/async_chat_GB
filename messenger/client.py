@@ -3,7 +3,7 @@ from socket import AF_INET, SOCK_STREAM
 
 from messenger.config import DEFAULT_IP, DEFAULT_PORT
 from messenger.protocol import AuthPresence
-from messenger.protocol.request import Request
+from messenger.protocol.request import Request, Message
 from messenger.protocol.response import Responce
 from messenger.utils import send_data, recv_data
 from messenger.utils import log, logger
@@ -18,14 +18,28 @@ class Client:
     @logger.catch
     def run(self):
         with sock(AF_INET, SOCK_STREAM) as socket:
-
             # create socket and connect to the server
             self.socket: sock = socket
             self.connect_to_server()
             self.send_presence_report()
+            while True:
+                # send message # todo: send data to server
+                message = input('write some test: ')
+                if message == 'exit':
+                    self.socket.close()
+                    break
+                message = Message(
+                    from_='from',
+                    to='to',
+                    message=message,
+                )
 
-            # send message
-            # todo: send data to server
+                send_data(self.socket, message)
+                responce = recv_data(self.socket)
+                logger.critical(responce)
+
+                data = recv_data(self.socket)
+                logger.critical(data)
 
     @log()
     def connect_to_server(self):
